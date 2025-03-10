@@ -1,10 +1,10 @@
 package com.example.androidinterviewtask.data.model
-
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+
 @Entity(tableName = "crypto_table")
-data class Crypto(
+data class CryptoEntity(
     @PrimaryKey val symbol: String,
     val priceChange: String,
     val priceChangePercent: String,

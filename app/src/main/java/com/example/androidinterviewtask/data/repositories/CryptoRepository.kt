@@ -1,27 +1,35 @@
 package com.example.androidinterviewtask.data.repositories
 
+import android.content.Context
+import android.util.Log
+import com.example.androidinterviewtask.data.database.CryptoDatabase
 import com.example.androidinterviewtask.data.model.Crypto
 import com.example.androidinterviewtask.data.retrofit.RetrofitClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-
-class CryptoRepository {
-    fun fetchCrypto(callback: (List<Crypto>?) -> Unit) {
-        val call = RetrofitClient.instance.getAllCrypto()
-        call.enqueue(object : Callback<List<Crypto>> {
-            override fun onResponse(call: Call<List<Crypto>>, response: Response<List<Crypto>>) {
-                if (response.isSuccessful) {
-                    callback(response.body())
-                } else {
-                    callback(null)
-                }
+class CryptoRepository(context: Context) {
+    private val cryptoDao = CryptoDatabase.getDatabase(context).tickerDao()
+    suspend fun fetchCryptoFromApi(): List<Crypto>? {
+        return try {
+            val crypto = withContext(Dispatchers.IO) {
+                RetrofitClient.instance.getAllCrypto()
             }
-
-            override fun onFailure(call: Call<List<Crypto>>, t: Throwable) {
-                callback(null)
+            if (crypto.isNotEmpty()) {
+                storeCryptoInDatabase(crypto)
             }
-        })
+            crypto
+        } catch (e: Exception) {
+            Log.e("Error", e.toString())
+            null
+        }
+    }
+    suspend fun storeCryptoInDatabase(tickers: List<Crypto>) {
+        cryptoDao.clearCrypto()
+        cryptoDao.insertCrypto(tickers)
+    }
+
+    suspend fun getCryptoFromDatabase(): List<Crypto> {
+        return cryptoDao.getAllCrypto()
     }
 }

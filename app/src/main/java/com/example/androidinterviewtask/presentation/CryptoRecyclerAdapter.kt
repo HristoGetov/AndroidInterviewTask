@@ -1,5 +1,6 @@
 package com.example.androidinterviewtask.presentation
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +29,16 @@ class CryptoRecyclerAdapter (private var tickers: List<Crypto>) :
         holder.symbolTextView.text = "${ticker.symbol}:"
         holder.priceChangeTextView.text = "${ticker.priceChangePercent}%"
         holder.bidAskTextView.text = "${ticker.bidPrice}/${ticker.askPrice}"
+
+        holder.itemView.setOnClickListener {
+            val context = it.context
+            val intent = Intent(context, DetailsActivity::class.java).apply {
+                putExtra("symbol", ticker.symbol)
+                putExtra("priceChange", ticker.priceChangePercent)
+                putExtra("priceChangePercent", ticker.priceChange)
+            }
+            context.startActivity(intent)
+        }
     }
 
     override fun getItemCount() = tickers.size
